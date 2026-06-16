@@ -1,0 +1,17 @@
+{
+  "name": "mindmap",
+  "description": "Generate an interactive Markmap mindmap from a file, pasted text, or a topic. Hybrid structuring with optional standalone-HTML rendering.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Haixia Cheng",
+    "email": "Haixia.Cheng@microsoft.com"
+  },
+  "license": "MIT",
+  "keywords": [
+    "mindmap",
+    "markmap",
+    "visualization",
+    "skills",
+    "markdown"
+  ]
+}

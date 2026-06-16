@@ -1,0 +1,20 @@
+{
+  "name": "mindmap-marketplace",
+  "description": "Marketplace for the mindmap skill plugin",
+  "owner": {
+    "name": "Haixia Cheng",
+    "email": "Haixia.Cheng@microsoft.com"
+  },
+  "plugins": [
+    {
+      "name": "mindmap",
+      "description": "Generate an interactive Markmap mindmap from a file, pasted text, or a topic.",
+      "version": "0.1.0",
+      "source": "./",
+      "author": {
+        "name": "Haixia Cheng",
+        "email": "Haixia.Cheng@microsoft.com"
+      }
+    }
+  ]
+}
