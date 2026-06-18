@@ -165,6 +165,25 @@ This runs `npx markmap-cli <file>.md -o <file>.html --no-open` under the hood (v
 
 ---
 
+## Generate mindmaps in CI (GitHub Action)
+
+The repo ships a workflow — [`.github/workflows/generate-mindmap.yml`](.github/workflows/generate-mindmap.yml) — that runs this plugin in GitHub Actions: give it a URL, some text, or a topic, and it generates the mindmap and opens a pull request adding it to [`examples/`](examples/).
+
+**Setup (one-time):** add a repository secret named `COPILOT_CLI_TOKEN` — a [fine-grained personal access token](https://github.com/settings/personal-access-tokens/new) with the **Copilot Requests** account permission. (The built-in `GITHUB_TOKEN` has no Copilot access, so a PAT is required.)
+
+**Run it:** from the **Actions** tab, pick **Generate mindmap** → **Run workflow**, then fill in:
+
+| Input | Default | Meaning |
+|---|---|---|
+| `input` | — | URL, pasted text, or a topic to map (required) |
+| `render` | `true` | also render a standalone interactive `.html` |
+| `panel` | `false` | use the multi-agent judge panel (slower, token-intensive) |
+| `model` | `claude-opus-4.8` | the Copilot model to use |
+
+**What it does:** installs [Copilot CLI](https://www.npmjs.com/package/@github/copilot), loads this repo as a plugin (`--plugin-dir`), runs the `/mindmap` skill non-interactively (`copilot -p … --model claude-opus-4.8`) to write the `.md` (and `.html`) into `examples/` and add an entry to [`examples/README.md`](examples/README.md), then commits the new files to a `mindmap/run-<id>` branch and opens a PR.
+
+---
+
 ## How it works
 
 This is a **prompt-driven** skill: the intelligence lives in instructions, not code.

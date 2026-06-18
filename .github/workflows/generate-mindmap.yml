@@ -1,0 +1,141 @@
+name: Generate mindmap
+
+# Turn a URL, pasted text, or a topic into a Markmap mindmap with the bundled
+# `mindmap` Copilot CLI plugin, then open a pull request that adds it to examples/.
+#
+# Requires one repository secret:
+#   COPILOT_CLI_TOKEN - a fine-grained personal access token with the
+#                       "Copilot Requests" account permission (the built-in
+#                       GITHUB_TOKEN does not have Copilot access).
+
+on:
+  workflow_dispatch:
+    inputs:
+      input:
+        description: "URL, pasted text, or a topic to turn into a mindmap"
+        required: true
+        type: string
+      render:
+        description: "Also render a standalone interactive .html"
+        required: false
+        type: boolean
+        default: true
+      panel:
+        description: "Use the multi-agent judge panel (slower, token-intensive)"
+        required: false
+        type: boolean
+        default: false
+      model:
+        description: "Copilot model to use"
+        required: false
+        type: string
+        default: claude-opus-4.8
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate-mindmap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install GitHub Copilot CLI
+        run: npm install -g @github/copilot
+
+      - name: Generate mindmap with Copilot CLI
+        env:
+          # Order of precedence for Copilot auth: COPILOT_GITHUB_TOKEN > GH_TOKEN > GITHUB_TOKEN.
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_CLI_TOKEN }}
+          # User-controlled input is passed via env (never interpolated into the
+          # script body) to avoid shell command injection.
+          MINDMAP_INPUT: ${{ inputs.input }}
+          RENDER: ${{ inputs.render }}
+          PANEL: ${{ inputs.panel }}
+          MODEL: ${{ inputs.model }}
+        run: |
+          set -euo pipefail
+
+          # Build the mindmap skill flags from the workflow inputs.
+          FLAGS=""
+          if [ "$PANEL" = "true" ]; then FLAGS="$FLAGS --panel"; fi
+          if [ "$RENDER" = "true" ]; then FLAGS="$FLAGS --render"; fi
+          [ -n "$FLAGS" ] || FLAGS="(none)"
+
+          # Static instructions for the agent.
+          read -r -d '' PROMPT <<'EOF' || true
+          You are running inside a GitHub Actions workflow. The "mindmap" Copilot CLI
+          plugin is loaded (via --plugin-dir), so its /mindmap skill is available.
+
+          Generate a Markmap mindmap from the INPUT (shown at the end of this message)
+          and add it to this repository's examples/ directory. Work fully autonomously:
+          never ask questions, make reasonable choices on your own.
+
+          Do all of the following:
+          1. Run the mindmap skill on the INPUT. If it starts with http:// or https://,
+             fetch it as a URL; otherwise treat it as pasted text or a topic.
+             Apply these skill flags: __FLAGS__
+             Write the Markmap source to examples/<slug>.mindmap.md (slug per the skill's
+             rules). If --render is in the flags, also produce examples/<slug>.mindmap.html
+             using the skill's scripts/render.sh. Never overwrite an existing file - use the
+             -2, -3, ... suffix as the skill specifies.
+          2. Add a new "## " section to examples/README.md that documents the new mindmap,
+             matching the style of the existing entries: a source link, the generating
+             command, and a table linking the .md and .html files. Append it after the
+             existing example sections.
+          3. Do NOT run git and do NOT open a pull request. Only create or modify files
+             under examples/. The workflow commits the changes and opens the PR.
+
+          On the final line, print the path of the .md file you created.
+          EOF
+
+          PROMPT="${PROMPT//__FLAGS__/$FLAGS}"
+
+          copilot \
+            --plugin-dir "$GITHUB_WORKSPACE" \
+            --model "$MODEL" \
+            --allow-all-tools --allow-all-paths --allow-all-urls \
+            --no-ask-user \
+            --no-color \
+            --log-level error \
+            -p "$PROMPT
+
+          INPUT:
+          $MINDMAP_INPUT"
+
+      - name: Create pull request
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MINDMAP_INPUT: ${{ inputs.input }}
+          MODEL: ${{ inputs.model }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$(git status --porcelain examples)" ]; then
+            echo "::error::Copilot did not produce any files under examples/."
+            exit 1
+          fi
+
+          BRANCH="mindmap/run-${GITHUB_RUN_ID}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$BRANCH"
+          git add examples
+          git commit -m "Add generated mindmap to examples"
+          git push origin "$BRANCH"
+
+          BODY=$(printf 'Automated mindmap generated by the **generate-mindmap** workflow (run #%s) using model `%s`.\n\nInput:\n```\n%s\n```\n' \
+            "$GITHUB_RUN_NUMBER" "$MODEL" "$MINDMAP_INPUT")
+
+          gh pr create \
+            --base "$GITHUB_REF_NAME" \
+            --head "$BRANCH" \
+            --title "Add generated mindmap to examples" \
+            --body "$BODY"
