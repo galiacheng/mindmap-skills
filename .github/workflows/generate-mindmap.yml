@@ -63,6 +63,17 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Fail fast with an actionable message if the Copilot token is missing.
+          # Without it, Copilot CLI aborts with a cryptic "No authentication
+          # information found" error.
+          if [ -z "${COPILOT_GITHUB_TOKEN:-}" ]; then
+            echo "::error::The COPILOT_CLI_TOKEN repository secret is not set (or is empty)." \
+              "Create a fine-grained PAT with the 'Copilot Requests' account permission" \
+              "and add it as the COPILOT_CLI_TOKEN secret. The built-in GITHUB_TOKEN cannot" \
+              "be used because it has no Copilot access."
+            exit 1
+          fi
+
           # Build the mindmap skill flags from the workflow inputs.
           FLAGS=""
           if [ "$PANEL" = "true" ]; then FLAGS="$FLAGS --panel"; fi
