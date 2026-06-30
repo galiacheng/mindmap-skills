@@ -123,7 +123,12 @@ jobs:
 
       - name: Create pull request
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Use the fine-grained PAT (same secret as Copilot auth) so the PR is
+          # opened as the token owner. The built-in GITHUB_TOKEN is blocked from
+          # creating PRs by the "Allow GitHub Actions to create and approve pull
+          # requests" policy. This PAT must also grant Contents and Pull requests
+          # write permission on the repository.
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
           MINDMAP_INPUT: ${{ inputs.input }}
           MODEL: ${{ inputs.model }}
         run: |
