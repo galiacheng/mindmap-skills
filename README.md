@@ -13,7 +13,7 @@
 
 </div>
 
-`mindmap` is a plugin for [Claude Code](https://docs.claude.com/en/docs/claude-code) and [GitHub Copilot CLI](https://docs.github.com/copilot/concepts/agents/copilot-cli). Point it at a dense report, a long article, or just a topic, and it distills the key ideas into a clean, zoomable [Markmap](https://markmap.js.org) mindmap — right from your terminal.
+`mindmap` is a plugin for [Claude Code](https://docs.claude.com/en/docs/claude-code) and [GitHub Copilot](https://docs.github.com/copilot/concepts/agents/copilot-cli). Point it at a dense report, a long article, or just a topic, and it distills the key ideas into a clean, zoomable [Markmap](https://markmap.js.org) mindmap — right from your terminal.
 
 > Two languages in one plugin: `/mindmap` (English) and `/mindmap-zh` (中文).
 
@@ -73,7 +73,7 @@ That's real output — see [`examples/`](examples/) for the full Markmap `.md` p
 
 - **Grasp dense material fast** — collapse a 3,000-word report into 5–7 branches you can scan at a glance, instead of reading top to bottom.
 - **One command, any source** — a file, a URL, pasted notes, or just a topic. No copy-pasting into a separate web tool.
-- **Stays in your workflow** — runs inside Claude Code / Copilot CLI; the map lands as a file right next to your work.
+- **Stays in your workflow** — runs inside Claude Code / GitHub Copilot; the map lands as a file right next to your work.
 - **Smart structure, not a text dump** — mirrors a structured doc's outline, or distills loose prose into 4–7 concise branches. Nodes are short phrases, not sentences.
 - **Portable, interactive output** — standard Markmap `.md` that opens anywhere, plus an optional standalone `.html` you can share.
 
@@ -83,7 +83,7 @@ That's real output — see [`examples/`](examples/) for the full Markmap `.md` p
 
 ## 📦 Install
 
-The same repo is a valid plugin for **both** Claude Code and GitHub Copilot CLI — they share the plugin/marketplace format.
+The same repo is a valid plugin for **both** Claude Code and GitHub Copilot — they share the plugin/marketplace format.
 
 ### Claude Code
 
@@ -95,14 +95,14 @@ The same repo is a valid plugin for **both** Claude Code and GitHub Copilot CLI 
 
 > The explicit `https://` URL avoids an SSH clone. The `galiacheng/mindmap-skills` shorthand also works **if** you have GitHub SSH keys configured; otherwise it fails with `Permission denied (publickey)`.
 
-### GitHub Copilot CLI
+### GitHub Copilot
 
 ```bash
 copilot plugin marketplace add galiacheng/mindmap-skills
 copilot plugin install mindmap@mindmap-marketplace
 ```
 
-Then run `/mindmap` in your session. On Copilot CLI the skill uses the same workflow; tool names map automatically (see [`skills/mindmap/references/copilot-tools.md`](skills/mindmap/references/copilot-tools.md)).
+Then run `/mindmap` in your session. On GitHub Copilot the skill uses the same workflow; tool names map automatically (see [`skills/mindmap/references/copilot-tools.md`](skills/mindmap/references/copilot-tools.md)).
 
 The marketplace manifest lives at [`.claude-plugin/marketplace.json`](.claude-plugin/marketplace.json).
 
