@@ -2,6 +2,8 @@
 
 [English](README.md) | [中文](README.zh.md)
 
+[![skills.sh](https://skills.sh/b/galiacheng/mindmap-skills)](https://skills.sh/galiacheng/mindmap-skills)
+
 **一眼读懂任何材料——在你的 AI 编码助手里，把文件、URL 或主题直接变成思维导图。**
 
 `mindmap` 是一个适用于 [Claude Code](https://docs.claude.com/en/docs/claude-code) 与 [GitHub Copilot CLI](https://docs.github.com/copilot/concepts/agents/copilot-cli) 的插件。把它指向一份密集的报告、一篇长文，或仅仅一个主题，它就会把关键内容提炼成清晰、可缩放的 [Markmap](https://markmap.js.org) 思维导图——就在你的终端里完成。
@@ -56,6 +58,26 @@
 ## 安装
 
 同一个仓库既是 Claude Code 的有效插件，也是 GitHub Copilot CLI 的有效插件——二者共用插件/市场（marketplace）格式。
+
+### Skills CLI（skills.sh）
+
+无需添加插件市场，也可以直接安装独立技能。需要 [Node.js](https://nodejs.org) 和 Git。
+
+```bash
+# 交互选择技能和目标智能体
+npx skills add galiacheng/mindmap-skills
+
+# 仅安装英文版或中文版
+npx skills add galiacheng/mindmap-skills --skill mindmap
+npx skills add galiacheng/mindmap-skills --skill mindmap-zh
+
+# 为当前项目的 GitHub Copilot 安装两个技能
+npx skills add galiacheng/mindmap-skills --skill mindmap mindmap-zh --agent github-copilot
+```
+
+默认安装到当前项目；添加 `--global` 可供所有项目使用。仅查看可用技能而不安装，可运行 `npx skills add galiacheng/mindmap-skills --list`。
+
+[skills.sh](https://skills.sh/galiacheng/mindmap-skills) 根据 CLI 的匿名安装统计自动收录并排名，无需另行提交。`--list` 不算安装，目录更新也不一定即时生效。详见[官方 FAQ](https://skills.sh/docs/faq)。
 
 ### Claude Code
 

@@ -10,6 +10,7 @@
 [![Works with](https://img.shields.io/badge/works%20with-Claude%20Code%20%7C%20GitHub%20Copilot-2563eb)](#-install)
 [![Output](https://img.shields.io/badge/output-Markmap%20.md%20%2B%20.html-f97316)](https://markmap.js.org)
 [![Skills](https://img.shields.io/badge/skills-%2Fmindmap%20%7C%20%2Fmindmap--zh-8b5cf6)](#-install)
+[![skills.sh](https://skills.sh/b/galiacheng/mindmap-skills)](https://skills.sh/galiacheng/mindmap-skills)
 
 </div>
 
@@ -84,6 +85,26 @@ That's real output — see [`examples/`](examples/) for the full Markmap `.md` p
 ## 📦 Install
 
 The same repo is a valid plugin for **both** Claude Code and GitHub Copilot — they share the plugin/marketplace format.
+
+### Skills CLI (skills.sh)
+
+Install individual skills without adding a plugin marketplace. Requires [Node.js](https://nodejs.org) and Git.
+
+```bash
+# Choose skills and target agents interactively
+npx skills add galiacheng/mindmap-skills
+
+# Install only the English or Chinese skill
+npx skills add galiacheng/mindmap-skills --skill mindmap
+npx skills add galiacheng/mindmap-skills --skill mindmap-zh
+
+# Install both skills for GitHub Copilot in the current project
+npx skills add galiacheng/mindmap-skills --skill mindmap mindmap-zh --agent github-copilot
+```
+
+Installation is project-local by default; add `--global` to make the skills available across projects. To list available skills without installing, run `npx skills add galiacheng/mindmap-skills --list`.
+
+[skills.sh](https://skills.sh/galiacheng/mindmap-skills) discovers and ranks skills through anonymous CLI installation statistics; no separate submission is required. Listing skills with `--list` is not an installation, and directory updates may not be immediate. See the [official FAQ](https://skills.sh/docs/faq).
 
 ### Claude Code
 
