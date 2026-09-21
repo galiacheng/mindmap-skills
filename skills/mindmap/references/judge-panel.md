@@ -81,50 +81,45 @@ one H1, the chosen branches and nodes, with each node in its selected format. Fo
 any node tagged 'rich', this is the standard-path output — keep the rich format.
 Return the complete markdown."
 
-## Output schemas (enforce via the Workflow `schema` option)
+## Output shapes
+
+Use structured-output constraints if the host supports them; otherwise request
+these shapes in the subagent prompt. Validate each result before passing it to
+the next stage. Missing fields or invalid results are failures, not empty successes.
 
 - **Proposer** → `{ title, branches: [{ heading, nodes: [{ text, format, tier, children: [...] }] }] }`
   where `format` ∈ `list|table|code|checkbox|link|bold`, `tier` ∈ `core|rich`.
 - **Judge** → `{ scores: [{ proposalId, dimensions: { branchCount, depth, phrasing, legibility, sourceFidelity, punchlineFirst, headlineNumbers, leafLegibility, visualBalance, formatFit }, total }], bestIdeas: [{ proposalId, idea }] }`
 - **Synthesizer** → returns the final Markmap `.md` as text (not JSON).
 
-## Workflow skeleton (adapt inline when `--panel` is set)
+## Execution protocol
 
-```js
-export const meta = {
-  name: 'mindmap-judge-panel',
-  description: 'Panel designs a mindmap structure: propose, judge, synthesize',
-  phases: [{ title: 'Propose' }, { title: 'Judge' }, { title: 'Synthesize' }],
-}
+Use the host's available subagent tools, not a particular workflow API. Follow
+its permission, approval, and resource limits. If independent delegation is
+unavailable, explain the limitation and ask whether to continue without
+`--panel`; do not impersonate independent agents in the main context.
 
-const SHARED = `...shared context block with SOURCE CONTENT interpolated...`
-const LENSES = [
-  { id: 'A', label: 'narrative-first', directive: '...' },
-  { id: 'B', label: 'data-first',      directive: '...' },
-  { id: 'C', label: 'audience-first',  directive: '...' },
-]
+1. **Propose:** create three independent subagent tasks, labelled A, B, and C.
+   Give each the shared context, its lens directive, the common closer, and the
+   proposer output shape. Run them in parallel if supported, or sequentially
+   in separate contexts. Collect and validate the proposals before judging.
+2. **Judge:** create three independent judge tasks. Give each the exact judge
+   prompt, every valid proposal with its stable A/B/C ID, and the judge output
+   shape. Collect and validate the scorecards before synthesis.
+3. **Synthesize:** create one synthesizer task with the shared context, exact
+   synthesizer prompt, valid labelled proposals, and valid judge scorecards.
+   It must return the final Markdown, not write files.
+4. **Write:** check the synthesized Markdown against the skill's format and
+   source-fidelity rules, then return to Step 3 for collision-safe file creation.
 
-phase('Propose')
-const proposals = (await parallel(LENSES.map(l => () =>
-  agent(`${SHARED}\n\nLENS: ${l.directive}\n\nCLOSER: return structured data only.`,
-    { label: `propose:${l.id}`, phase: 'Propose', schema: PROPOSAL_SCHEMA })
-))).filter(Boolean)
+Report failed roles explicitly. A malformed result may be sent back to that role
+for correction; never silently filter it out or substitute invented results.
+Proceed with valid remaining results only after telling the user which roles
+failed. If all proposers fail, announce the normal Step 2 single-pass fallback.
+If there are no valid judge scorecards or synthesis fails, stop and ask whether
+to retry or continue without `--panel`; do not present an unreviewed map as
+panel-reviewed.
 
-phase('Judge')
-const scorecards = (await parallel([1,2,3].map(n => () =>
-  agent(`${JUDGE_PROMPT}\n\nPROPOSALS:\n${JSON.stringify(proposals)}`,
-    { label: `judge:${n}`, phase: 'Judge', schema: JUDGE_SCHEMA })
-))).filter(Boolean)
-
-phase('Synthesize')
-const finalMd = await agent(
-  `${SYNTH_PROMPT}\n\nPROPOSALS:\n${JSON.stringify(proposals)}\n\nSCORES:\n${JSON.stringify(scorecards)}`,
-  { label: 'synthesize', phase: 'Synthesize' })
-
-return { finalMd }
-```
-
-After the workflow returns `finalMd`, the skill writes it as the `.md` (Step 3).
 Only for the vertical-poster path, first pass it through
 `scripts/degrade-rich.mjs` so tables/code/checkboxes become bullets the poster
 parser can read (standard markmap keeps the rich formats).

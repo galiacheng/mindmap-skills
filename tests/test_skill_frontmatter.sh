@@ -15,7 +15,7 @@ assert_eq "---" "$first" "starts with frontmatter delimiter"
 body="$(cat "$SKILL" 2>/dev/null)"
 assert_contains "$body" "name: mindmap" "declares name: mindmap"
 assert_contains "$body" "user-invocable: true" "is user-invocable"
-assert_contains "$body" "allowed-tools: Bash, Read, Write, Glob" "declares allowed-tools"
+assert_not_contains "$body" "allowed-tools:" "does not hard-code a host-specific tool allowlist"
 assert_contains "$body" "description:" "has a description"
 
 finish

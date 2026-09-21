@@ -2,6 +2,19 @@
 
 [README](../README.md) | [Chinese](usage.zh.md) | [Installation](installation.md)
 
+## Compatibility
+
+The skills describe capabilities rather than fixed tool names. They are intended for coding agents that support Agent Skills; installing with `npx skills` does not guarantee every feature works on every agent.
+
+| Feature | Requirements | When unavailable |
+|---|---|---|
+| Basic `.md` output | Inspect paths and create files; read files for file input. | Explain the missing capability or permission and ask how to proceed; do not claim a file was saved. |
+| URL input | Retrieve page content. | Ask for pasted content, a retry, or an explicitly chosen topic-based map. |
+| `--render` | Execute the supplied helper with Bash and Node.js / `npx`. | Keep the `.md`, explain why HTML was not generated, and provide a manual rendering command. |
+| `--panel` (`mindmap` only) | Delegate to independent subagents and collect results. | Explain the limitation and ask before switching to single-pass generation. |
+
+The agent's permissions and approvals still apply. Examples use slash-command notation; if your agent does not expose slash commands, invoke `mindmap` or `mindmap-zh` through its supported skill mechanism.
+
 ## Inputs and flags
 
 ```text
@@ -18,9 +31,9 @@
 
 | Flag | Behavior |
 |---|---|
-| `--render` | After writing the `.md`, also produce interactive `.html` (needs Node.js / `npx`). |
+| `--render` | After writing the `.md`, also produce interactive `.html` (needs command execution, Bash, and Node.js / `npx`). |
 | `--output <path>` | Write the `.md` to a specific path instead of the default. |
-| `--panel` | Design the structure with a multi-agent judge panel; `/mindmap` only. |
+| `--panel` | Design the structure with independent subagents; `mindmap` only. |
 
 The skill follows an existing outline or groups unstructured content into 4-7 main branches, aiming for 3-4 levels and short node labels. Existing output files are preserved by adding a numeric suffix, including when `--output` is specified.
 
@@ -78,15 +91,17 @@ To view the `.md`, paste it at [markmap.js.org](https://markmap.js.org), open it
 /mindmap "transformer attention" --render
 ```
 
-This runs `npx markmap-cli <file>.md -o <file>.html --no-open` through [`render.sh`](../skills/mindmap/scripts/render.sh). Open the generated `.html` in a browser to zoom and collapse branches.
+This uses the agent's command-execution capability to run the Bash helper [`render.sh`](../skills/mindmap/scripts/render.sh), which calls `npx --yes markmap-cli <file>.md -o <file>.html --no-open`. Open the generated `.html` in a browser to zoom and collapse branches.
 
-**The `.md` is the guaranteed deliverable; HTML rendering is best-effort.** If Node.js / `npx` is missing, the skill still writes the `.md`, reports that rendering was skipped, and prints the command to run manually.
+**The `.md` is the guaranteed deliverable; HTML rendering is best-effort.** If command execution, Bash, or Node.js / `npx` is unavailable, the skill still writes the `.md`, explains the limitation, and prints a manual `npx` command for an environment with Node.js.
 
 [Node.js](https://nodejs.org) provides `npx`; no global `markmap-cli` install is needed. `npx` fetches it on demand.
 
 ## The judge panel (`--panel`)
 
 For complex or high-stakes sources such as papers and long reports, `/mindmap --panel` uses **3 proposers, 3 judges, and 1 synthesizer** instead of a single-pass structure.
+
+The host must support independent subagent tasks. No particular workflow API is required; tasks can run in parallel or sequentially in separate contexts. If delegation is unavailable, the skill asks before continuing without `--panel` rather than simulating independent reviewers.
 
 ```text
 /mindmap report.md --panel --render
@@ -146,3 +161,5 @@ One synthesizer uses the top-scored proposal as the spine, grafts in the best id
 **Cost:** the panel spawns about seven agents and is token-intensive. Without `--panel`, the skill uses a fast single pass. The Chinese `/mindmap-zh` skill does not include this flag.
 
 The exact prompts and schemas live in the [judge-panel reference](../skills/mindmap/references/judge-panel.md). See [real examples](../examples/README.md) for panel-generated outputs.
+
+Failed roles are reported explicitly. If all proposers fail, the skill announces a single-pass fallback. If no valid judge scorecards remain or synthesis fails, it asks whether to retry or continue without `--panel`.

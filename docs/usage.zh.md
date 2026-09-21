@@ -2,6 +2,19 @@
 
 [README](../README.zh.md) | [English](usage.md) | [安装指南](installation.zh.md)
 
+## 兼容性
+
+技能以能力描述操作，而非指定固定工具名，面向支持 Agent Skills 的编码智能体。通过 `npx skills` 安装成功，不代表每个智能体都能运行所有功能。
+
+| 功能 | 要求 | 不可用时 |
+|---|---|---|
+| 基础 `.md` 输出 | 检查路径并创建文件；文件输入还需读取文件。 | 说明缺失的能力或权限并询问如何继续，不声称文件已保存。 |
+| URL 输入 | 获取页面正文。 | 请用户粘贴正文、重试，或明确选择基于主题生成导图。 |
+| `--render` | 执行所附脚本，环境具备 Bash 和 Node.js / `npx`。 | 保留 `.md`，说明未生成 HTML 的原因，并提供手动渲染命令。 |
+| `--panel`（仅 `mindmap`） | 委派给独立子智能体并收集结果。 | 说明限制，征求同意后再切换到单次生成。 |
+
+仍需遵守智能体的权限与审批规则。示例使用斜杠命令表示调用方式；若智能体不提供斜杠命令，请通过其支持的技能机制调用 `mindmap` 或 `mindmap-zh`。
+
 ## 输入与参数
 
 ```text
@@ -18,9 +31,9 @@
 
 | 参数 | 行为 |
 |---|---|
-| `--render` | 写出 `.md` 后，同时生成可交互 `.html`（需要 Node.js / `npx`）。 |
+| `--render` | 写出 `.md` 后，同时生成可交互 `.html`（需要命令执行能力、Bash 和 Node.js / `npx`）。 |
 | `--output <路径>` | 将 `.md` 写到指定路径，而非默认路径。 |
-| `--panel` | 通过多智能体评审设计结构，仅 `/mindmap` 支持。 |
+| `--panel` | 通过独立子智能体评审设计结构，仅 `mindmap` 提供。 |
 
 技能沿用已有大纲，或把非结构化内容组织为 4–7 个主分支，目标深度为 3–4 层，每个节点使用短语。若输出文件已存在，会添加数字后缀，即使显式指定 `--output` 也不会覆盖原文件。
 
@@ -78,15 +91,17 @@ markmap:
 /mindmap-zh "Transformer 注意力机制" --render
 ```
 
-底层经由 [`render.sh`](../skills/mindmap-zh/scripts/render.sh) 运行 `npx markmap-cli <文件>.md -o <文件>.html --no-open`。用浏览器打开生成的 `.html` 即可缩放、折叠分支。
+通过智能体的命令执行能力运行 Bash 脚本 [`render.sh`](../skills/mindmap-zh/scripts/render.sh)，底层命令为 `npx --yes markmap-cli <文件>.md -o <文件>.html --no-open`。用浏览器打开生成的 `.html` 即可缩放、折叠分支。
 
-**`.md` 始终是有保证的交付物，HTML 渲染是尽力而为。** 若缺少 Node.js / `npx`，技能仍会写出 `.md`，报告已跳过渲染，并提供手动执行命令。
+**`.md` 始终是有保证的交付物，HTML 渲染是尽力而为。** 若无法执行命令，或缺少 Bash、Node.js / `npx`，技能仍会写出 `.md`，说明限制，并提供供 Node.js 环境使用的手动 `npx` 命令。
 
 [Node.js](https://nodejs.org) 提供 `npx`；无需全局安装 `markmap-cli`，`npx` 会按需拉取。
 
 ## 多智能体评审（`--panel`）
 
 对于论文、长报告等复杂或重要材料，英文技能 `/mindmap` 的 `--panel` 会使用 **3 个提案智能体、3 个评审智能体和 1 个综合智能体**，代替一次性生成结构。
+
+宿主需支持独立子智能体任务，不要求特定工作流 API。任务可在独立上下文中并行或顺序执行。若无法委派，技能会先征求同意，再去掉 `--panel` 继续，不会模拟独立评审。
 
 ```text
 /mindmap report.md --panel --render
@@ -143,3 +158,5 @@ flowchart TB
 **开销：** 此模式约启动七个智能体，消耗较多 token。不带 `--panel` 时使用快速单次生成；中文版 `/mindmap-zh` 不支持此参数。
 
 完整提示词和数据结构见[评审参考](../skills/mindmap/references/judge-panel.md)，生成效果见[真实示例](../examples/README.md)。
+
+失败的角色会明确告知用户。若所有提案均失败，技能会说明并回退到单次生成；若没有有效评审结果或综合失败，则询问是否重试，或去掉 `--panel` 继续。

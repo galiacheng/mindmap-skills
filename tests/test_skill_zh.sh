@@ -14,7 +14,7 @@ assert_eq "---" "$first" "starts with frontmatter delimiter"
 
 assert_contains "$body" "name: mindmap-zh" "declares name: mindmap-zh"
 assert_contains "$body" "user-invocable: true" "is user-invocable"
-assert_contains "$body" "allowed-tools: Bash, Read, Write, Glob, WebFetch" "declares allowed-tools"
+assert_not_contains "$body" "allowed-tools:" "does not hard-code a host-specific tool allowlist"
 assert_contains "$body" "/mindmap-zh" "documents the /mindmap-zh trigger"
 
 # Required sections (Chinese headers)
@@ -27,8 +27,16 @@ assert_contains "$body" "--render" "documents --render flag"
 assert_contains "$body" "--output" "documents --output flag"
 assert_contains "$body" "render.sh" "calls render.sh for --render"
 assert_contains "$body" "4–7" "states the 4-7 branch guardrail"
-assert_contains "$body" "WebFetch" "documents WebFetch for URL input"
+assert_contains "$body" "网页获取能力" "documents a capability for URL input"
 assert_contains "$body" "URL" "documents URL as an input type"
+assert_contains "$body" "## 智能体能力要求" "documents agent capability requirements"
+assert_contains "$body" "宿主的权限" "respects host permissions"
+assert_contains "$body" "无法检查或写入文件" "reports unavailable file access"
+assert_contains "$body" "检查目标是否已存在" "preserves collision checks"
+assert_contains "$body" "无法执行命令" "handles unavailable command execution"
+assert_contains "$body" "Bash" "documents the render helper runtime requirement"
+assert_not_contains "$body" "WebFetch" "does not require a named web tool"
+assert_not_contains "$body" "Glob" "does not require a named file-search tool"
 
 # The zh render.sh must stay byte-identical to the en one (no drift).
 EN="$here/../skills/mindmap/scripts/render.sh"

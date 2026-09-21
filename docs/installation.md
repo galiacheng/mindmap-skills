@@ -2,7 +2,9 @@
 
 [README](../README.md) | [Chinese](installation.zh.md) | [Usage](usage.md)
 
-Choose one installation method. The Skills CLI installs individual skills; the plugin marketplace installs the collection for Claude Code or GitHub Copilot.
+Choose one installation method. The Skills CLI installs individual skills for its supported agents; the plugin marketplace options below install the collection for specific hosts.
+
+Installation is not a runtime compatibility guarantee. Check your agent's [capabilities and invocation mechanism](usage.md#compatibility), especially for HTML rendering and the judge panel.
 
 ## Skills CLI (skills.sh)
 
@@ -48,7 +50,7 @@ copilot plugin marketplace add galiacheng/mindmap-skills
 copilot plugin install mindmap@mindmap-marketplace
 ```
 
-Then run `/mindmap` or `/mindmap-zh` in your session. On GitHub Copilot the workflow is the same, using equivalent tool names; see the [Copilot tool mapping](../skills/mindmap/references/copilot-tools.md).
+Then run `/mindmap` or `/mindmap-zh` in your session. Use the capabilities exposed by your installed version; see the [Copilot setup notes](../skills/mindmap/references/copilot-tools.md). Independent subagent support for `--panel` depends on the host.
 
 Claude Code and GitHub Copilot share the plugin/marketplace format. The marketplace manifest lives at [`.claude-plugin/marketplace.json`](../.claude-plugin/marketplace.json).
 

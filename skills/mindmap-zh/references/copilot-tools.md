@@ -1,21 +1,17 @@
-# Copilot CLI 工具名映射
+# Copilot 配置说明
 
-本技能使用 Claude Code 的工具名编写。GitHub Copilot CLI 以不同名称提供相同能力。
-技能中出现左侧工具时，请使用右侧的 Copilot CLI 对应工具。
+技能描述所需能力，而非固定工具名。在 GitHub Copilot 中，请使用当前会话实际提供的工具；名称与可用性取决于版本和宿主。下表仅为示例，不是强制映射，也不授予权限。
 
-| 技能中的写法（Claude Code） | Copilot CLI 对应工具 |
-|----------------------------|----------------------|
-| `Read`（读取文件）          | `view`               |
-| `Write`（创建文件）         | `create`             |
-| `Edit`（编辑文件）          | `edit`               |
-| `Bash`（运行命令）          | `bash`               |
-| `Glob`（按文件名查找）      | `glob`               |
-| `WebFetch`（抓取 URL）      | `web_fetch`          |
+| 能力 | 工具名示例 |
+|---|---|
+| 读取文件 | `view` |
+| 创建或编辑文件 | `create`、`edit`、`apply_patch` |
+| 检查路径或查找文件 | `glob`、通过命令工具查询文件系统 |
+| 获取 URL 正文 | `web_fetch` |
+| 执行命令 | `bash`、`powershell` |
 
-技能中的其余部分（工作流、Markmap 格式、`render.sh`）与平台无关，在两个平台上行为一致。
+## 可选功能与权限
 
-## Copilot CLI 注意事项
-
-- **`--render` 步骤：** 技能调用 `bash <skill-dir>/scripts/render.sh`。在 Copilot CLI 上即 `bash` 工具——命令相同、行为相同。
-- **URL 输入：** 技能用 `WebFetch` 抓取 URL；在 Copilot CLI 上对应 `web_fetch`。
-- **写入前的重名检查：** 技能使用 `Glob`；在 Copilot CLI 上对应 `glob`。
+- **`--render`：** 所附 `render.sh` 需要 Bash 可执行程序和 Node.js / `npx`，与命令工具的名称无关。若不可用，保留 Markdown，说明未生成 HTML 的原因，并提供手动渲染命令。
+- **`--panel`：** 中文技能 `mindmap-zh` 不提供此参数。英文 `mindmap` 的评审模式需要独立子智能体委派和结果收集能力，不能仅根据宿主名称推定支持。
+- **权限：** 遵守宿主对文件、网络、命令执行和子智能体的审批规则。安装技能不会启用这些能力。

@@ -14,11 +14,11 @@ skills/mindmap/
 │   ├── render.sh         # thin wrapper around `npx markmap-cli` (the .md → .html step)
 │   └── degrade-rich.mjs  # rewrites rich nodes (tables/code/checkboxes) to bullets for the poster path
 └── references/
-    ├── copilot-tools.md  # Claude Code → Copilot CLI tool-name mapping
-    └── judge-panel.md    # the --panel multi-agent prompts, schemas, and workflow
+    ├── copilot-tools.md  # optional Copilot setup notes and tool examples
+    └── judge-panel.md    # portable --panel prompts, output shapes, and protocol
 ```
 
-- [`SKILL.md`](skills/mindmap/SKILL.md) tells Claude how to classify the input, apply the hybrid structuring rules, write a well-formed Markmap file, and handle edge cases (missing files, empty input, name collisions, render fallback).
+- [`SKILL.md`](skills/mindmap/SKILL.md) tells the agent how to classify the input, apply the hybrid structuring rules, write a well-formed Markmap file, and handle edge cases (missing capabilities, missing files, empty input, name collisions, render fallback). Describe capabilities rather than host-specific tool IDs, and keep the [compatibility guide](docs/usage.md#compatibility) aligned with both skills.
 - [`scripts/render.sh`](skills/mindmap/scripts/render.sh) is a ~35-line bash helper with deterministic exit codes (`0` ok · `1` usage · `2` file not found · `3` npx missing · `4` render failed). On success it prints only the `.html` path to stdout.
 
 See [`docs/design-spec.md`](docs/design-spec.md) for the full design.
@@ -31,7 +31,7 @@ The render helper has a bash test suite (no network — it uses a fake `npx`):
 bash tests/run_tests.sh
 ```
 
-Expected: `ALL TESTS PASSED` (45 checks across `test_render.sh`, `test_skill_frontmatter.sh`, `test_skill_body.sh`, `test_skill_zh.sh`).
+Expected: `ALL TESTS PASSED` across `test_render.sh`, `test_skill_frontmatter.sh`, `test_skill_body.sh`, and `test_skill_zh.sh`. Skill checks cover portable capability requirements as well as structure and frontmatter.
 
 ```
 mindmap/
@@ -43,7 +43,7 @@ mindmap/
 │   └── mindmap-zh/        # Chinese skill (/mindmap-zh)
 ├── tests/                 # bash harness for render.sh + SKILL.md structure
 ├── examples/              # real generated output (.md + rendered .html)
-├── docs/                  # design spec
+├── docs/                  # installation, usage, compatibility, and design
 ├── LICENSE
 └── README.md
 ```
