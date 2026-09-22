@@ -31,7 +31,7 @@ The render helper has a bash test suite (no network — it uses a fake `npx`):
 bash tests/run_tests.sh
 ```
 
-Expected: `ALL TESTS PASSED` across `test_render.sh`, `test_skill_frontmatter.sh`, `test_skill_body.sh`, and `test_skill_zh.sh`. Skill checks cover portable capability requirements as well as structure and frontmatter.
+Expected: `ALL TESTS PASSED` across `test_render.sh`, `test_skill_frontmatter.sh`, `test_skill_body.sh`, `test_skill_zh.sh`, and `test_workflow.sh`. Skill checks cover portable capability requirements as well as structure and frontmatter. Workflow checks cover model defaults and CLI arguments without making API calls.
 
 ```
 mindmap/
