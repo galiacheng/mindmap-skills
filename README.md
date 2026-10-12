@@ -13,7 +13,7 @@
 
 For coding agents that support **Agent Skills** and the [required capabilities](docs/usage.md#compatibility). Produces [Markmap](https://markmap.js.org) `.md` files and optional interactive `.html`, with concise branches instead of a wall of text.
 
-Two skills: `/mindmap` (English) and `/mindmap-zh` (中文).
+Two skills: `/mindmap` (English by default) and `/mindmap-zh` (简体中文 by default). Both accept multilingual input and support output in **19 languages**, including all languages listed in the [language guide](docs/usage.md#languages). Use `--lang <code>` to choose a language or `--lang auto` to follow the source.
 
 ## 👀 See it
 
@@ -40,12 +40,15 @@ For plugin marketplace commands, agent-specific installation, and manual setup, 
 /mindmap https://example.com/article --render
 /mindmap "vector databases" --output overview.mindmap.md
 /mindmap-zh "向量数据库" --render
+/mindmap report.md --lang ja --render
+/mindmap https://example.com/article --lang auto
 ```
 
 You can also pass pasted text or notes directly. Examples use slash-command notation; invoke the skill through your agent's supported mechanism.
 
 | Flag | Purpose |
 |---|---|
+| `--lang <code\|auto>` | Choose the output language or match the source; preserves each skill's default when omitted. |
 | `--render` | Also generate interactive HTML (requires command execution, Bash, and Node.js / `npx`). |
 | `--output <path>` | Choose the output path. |
 | `--panel` | Use a multi-agent judge panel; requires independent subagents, is token-intensive, and is available in `mindmap` only. |

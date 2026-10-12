@@ -8,7 +8,7 @@
   "plugins": [
     {
       "name": "mindmap",
-      "description": "Generate an interactive Markmap mindmap from a file, a URL, pasted text, or a topic. Bilingual: /mindmap (English) and /mindmap-zh (Chinese).",
+      "description": "Generate an interactive Markmap mindmap from a file, a URL, pasted text, or a topic in 19 languages. /mindmap defaults to English and /mindmap-zh to Simplified Chinese; select output with --lang.",
       "version": "0.3.0",
       "source": "./",
       "author": {

@@ -7,17 +7,24 @@ content); do not paraphrase.
 
 ## Shared context block
 
-Prepend this to every proposer and to the synthesizer:
+Resolve the output language in the main skill before starting the panel. Prepend this to every proposer, judge, and synthesizer, interpolating both source content and the resolved language:
 
 ```
 SOURCE CONTENT:
 <full resolved input content>
 
+OUTPUT LANGUAGE:
+<resolved language code and name, including Simplified/Traditional Chinese script>
+- Use this language for the title and all human-readable node text, table prose, and link labels.
+- Translate faithfully; preserve code, identifiers, URLs, paths, proper names, and source numbers/units where translation would alter meaning.
+- Keep schema keys and format/tier values unchanged.
+- Preserve Unicode and normal logical text order for Arabic/Persian; do not transliterate or reverse characters.
+
 SKILL RULES (hard constraints):
 - Exactly one H1 (the central topic).
 - 4–7 main branches (## H2).
 - Depth 3–4 levels total.
-- Every node is a short phrase (<= ~8 words), never a sentence.
+- Every node is a short phrase (<= ~8 words, or comparably concise in languages without space-delimited words), never a sentence.
 - Condense aggressively; legibility over completeness.
 - When the source is already structured, mirror its outline.
 
@@ -64,6 +71,9 @@ source), punchline-first (payoff surfaced early), headline numbers (big figures
 bolded), leaf legibility (readable when projected), visual balance (branches
 roughly even), format fit (right format per node).
 
+Check the OUTPUT LANGUAGE constraint, including the requested Chinese script.
+Language mismatches violate source fidelity and phrasing; flag them for correction.
+
 For each proposal also name the SINGLE best idea it contributes — a branch,
 framing, or node the winner should steal. Return scores + best-idea per proposal
 as structured data. Default to lower scores when uncertain."
@@ -102,15 +112,16 @@ unavailable, explain the limitation and ask whether to continue without
 1. **Propose:** create three independent subagent tasks, labelled A, B, and C.
    Give each the shared context, its lens directive, the common closer, and the
    proposer output shape. Run them in parallel if supported, or sequentially
-   in separate contexts. Collect and validate the proposals before judging.
-2. **Judge:** create three independent judge tasks. Give each the exact judge
+   in separate contexts. Collect and validate the proposals, including their
+   output language, before judging.
+2. **Judge:** create three independent judge tasks. Give each the shared context, exact judge
    prompt, every valid proposal with its stable A/B/C ID, and the judge output
    shape. Collect and validate the scorecards before synthesis.
 3. **Synthesize:** create one synthesizer task with the shared context, exact
    synthesizer prompt, valid labelled proposals, and valid judge scorecards.
    It must return the final Markdown, not write files.
 4. **Write:** check the synthesized Markdown against the skill's format and
-   source-fidelity rules, then return to Step 3 for collision-safe file creation.
+   source-fidelity and output-language rules, then return to Step 3 for collision-safe file creation.
 
 Report failed roles explicitly. A malformed result may be sent back to that role
 for correction; never silently filter it out or substitute invented results.

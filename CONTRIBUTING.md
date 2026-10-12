@@ -31,7 +31,9 @@ The render helper has a bash test suite (no network — it uses a fake `npx`):
 bash tests/run_tests.sh
 ```
 
-Expected: `ALL TESTS PASSED` across `test_render.sh`, `test_skill_frontmatter.sh`, `test_skill_body.sh`, `test_skill_zh.sh`, and `test_workflow.sh`. Skill checks cover portable capability requirements as well as structure and frontmatter. Workflow checks cover model defaults and CLI arguments without making API calls.
+Expected: `ALL TESTS PASSED` across `test_render.sh`, `test_skill_frontmatter.sh`, `test_skill_body.sh`, `test_skill_zh.sh`, `test_skill_languages.sh`, and `test_workflow.sh`. Skill checks cover portable capability requirements as well as structure, frontmatter, language coverage, and panel language propagation. Workflow checks cover model defaults, language selection, and CLI arguments without making API calls.
+
+Keep the language tables and selection rules aligned in both independently installable skills and both usage guides. Preserve the English and Simplified Chinese defaults, and pass the resolved language to every panel role. Language tests check this instruction contract, not model translation quality.
 
 ```
 mindmap/
@@ -39,8 +41,8 @@ mindmap/
 │   ├── plugin.json        # plugin manifest
 │   └── marketplace.json   # marketplace manifest (for /plugin marketplace add)
 ├── skills/
-│   ├── mindmap/           # English skill (/mindmap)
-│   └── mindmap-zh/        # Chinese skill (/mindmap-zh)
+│   ├── mindmap/           # multilingual, English default (/mindmap)
+│   └── mindmap-zh/        # multilingual, Simplified Chinese default (/mindmap-zh)
 ├── tests/                 # bash harness for render.sh + SKILL.md structure
 ├── examples/              # real generated output (.md + rendered .html)
 ├── docs/                  # installation, usage, compatibility, and design

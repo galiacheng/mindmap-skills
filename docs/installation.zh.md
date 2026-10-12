@@ -14,7 +14,7 @@
 # 交互选择技能和目标智能体
 npx skills add galiacheng/mindmap-skills
 
-# 仅安装英文版或中文版
+# 安装默认英文或默认简体中文的技能
 npx skills add galiacheng/mindmap-skills --skill mindmap
 npx skills add galiacheng/mindmap-skills --skill mindmap-zh
 
@@ -26,6 +26,8 @@ npx skills add galiacheng/mindmap-skills --list
 ```
 
 默认安装到当前项目；添加 `--global` 可供所有项目使用。
+
+任一技能均支持全部 [19 种输入/输出语言](usage.zh.md#多语言)。用 `--lang <代码>` 指定输出语言，或用 `--lang auto` 跟随原文，无需按语言分别安装。
 
 ### skills.sh 收录
 

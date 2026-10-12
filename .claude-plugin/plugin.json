@@ -1,6 +1,6 @@
 {
   "name": "mindmap",
-  "description": "Generate an interactive Markmap mindmap from a file, a URL, pasted text, or a topic. Bilingual (English /mindmap + Chinese /mindmap-zh), with optional standalone-HTML rendering.",
+  "description": "Generate an interactive Markmap mindmap from a file, a URL, pasted text, or a topic in 19 languages. /mindmap defaults to English and /mindmap-zh to Simplified Chinese; use --lang to select output, with optional standalone-HTML rendering.",
   "version": "0.3.0",
   "author": {
     "name": "Haixia Cheng",

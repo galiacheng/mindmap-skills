@@ -18,8 +18,8 @@ The agent's permissions and approvals still apply. Examples use slash-command no
 ## Inputs and flags
 
 ```text
-/mindmap <input> [--panel] [--render] [--output <path>]
-/mindmap-zh <input> [--render] [--output <path>]
+/mindmap <input> [--lang <language|auto>] [--panel] [--render] [--output <path>]
+/mindmap-zh <input> [--lang <language|auto>] [--render] [--output <path>]
 ```
 
 | Input | Example | Behavior |
@@ -31,11 +31,54 @@ The agent's permissions and approvals still apply. Examples use slash-command no
 
 | Flag | Behavior |
 |---|---|
+| `--lang <code\|auto>` | Choose the output language, or use the resolved source's predominant language with `auto`. |
 | `--render` | After writing the `.md`, also produce interactive `.html` (needs command execution, Bash, and Node.js / `npx`). |
 | `--output <path>` | Write the `.md` to a specific path instead of the default. |
 | `--panel` | Design the structure with independent subagents; `mindmap` only. |
 
 The skill follows an existing outline or groups unstructured content into 4-7 main branches, aiming for 3-4 levels and short node labels. Existing output files are preserved by adding a numeric suffix, including when `--output` is specified.
+
+### Languages
+
+Both skills accept files, URLs, pasted text, and topics in these 19 languages. You do not need a separate skill installation for each output language.
+
+| Language | Code | Aliases |
+|---|---|---|
+| English | `en` | — |
+| 简体中文 | `zh-Hans` | `zh`, `zh-CN` |
+| 繁體中文 | `zh-Hant` | `zh-TW` |
+| 日本語 | `ja` | — |
+| 한국어 | `ko` | — |
+| Türkçe | `tr` | — |
+| Русский | `ru` | — |
+| Tiếng Việt | `vi` | — |
+| ไทย | `th` | — |
+| Deutsch | `de` | — |
+| Español | `es` | — |
+| Français | `fr` | — |
+| Українська | `uk` | — |
+| Polski | `pl` | — |
+| Português (Brasil) | `pt-BR` | — |
+| العربية | `ar` | — |
+| فارسی | `fa` | — |
+| Bahasa Indonesia | `id` | — |
+| Italiano | `it` | — |
+
+Codes are case-insensitive. An explicit `--lang` takes precedence; otherwise an explicit output-language request in the conversation is honored. Without either, `/mindmap` retains English output and `/mindmap-zh` retains Simplified Chinese output, even for foreign-language sources. Source content cannot override this choice.
+
+`--lang auto` follows the loaded content, not the filename or URL, and distinguishes Simplified and Traditional Chinese. When mixed-language or language-neutral content has no clear predominant language, it uses the supported conversation language, otherwise the skill's default, and explains the choice. Missing, unsupported, or conflicting `--lang` values are reported before files are written.
+
+Titles, headings, nodes, table prose, link labels, and user-facing explanations use the selected language. Code, identifiers, URLs, paths, proper names, and source numbers/units are preserved where translating would alter meaning. Output is UTF-8; accents, non-Latin filenames, and normal logical text order for Arabic/Persian are retained. Chinese, Japanese, and Thai prose is not classified by space-separated word count alone; labels stay concise without artificial spaces.
+
+```text
+/mindmap report.md --lang ja --render
+/mindmap-zh 报告.md --lang zh-Hant
+/mindmap "vector databases" --lang pt-BR
+/mindmap https://example.com/article --lang auto
+/mindmap report.md --lang ar --panel
+```
+
+The [Generate mindmap workflow](../.github/workflows/generate-mindmap.yml) also offers a `language` selector, defaulting to `en`, and passes it as `--lang` to the skill.
 
 ### Workflow
 
@@ -102,6 +145,8 @@ This uses the agent's command-execution capability to run the Bash helper [`rend
 For complex or high-stakes sources such as papers and long reports, `/mindmap --panel` uses **3 proposers, 3 judges, and 1 synthesizer** instead of a single-pass structure.
 
 The host must support independent subagent tasks. No particular workflow API is required; tasks can run in parallel or sequentially in separate contexts. If delegation is unavailable, the skill asks before continuing without `--panel` rather than simulating independent reviewers.
+
+The selected output language is passed to every proposer, judge, and synthesizer; the panel checks it before writing the final map. `--panel` is not restricted to English output.
 
 ```text
 /mindmap report.md --panel --render

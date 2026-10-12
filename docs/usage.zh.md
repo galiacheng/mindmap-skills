@@ -18,8 +18,8 @@
 ## 输入与参数
 
 ```text
-/mindmap-zh <输入> [--render] [--output <路径>]
-/mindmap <输入> [--panel] [--render] [--output <路径>]
+/mindmap-zh <输入> [--lang <语言|auto>] [--render] [--output <路径>]
+/mindmap <输入> [--lang <语言|auto>] [--panel] [--render] [--output <路径>]
 ```
 
 | 输入 | 示例 | 行为 |
@@ -31,11 +31,54 @@
 
 | 参数 | 行为 |
 |---|---|
+| `--lang <代码\|auto>` | 指定输出语言，或用 `auto` 跟随已加载原文的主要语言。 |
 | `--render` | 写出 `.md` 后，同时生成可交互 `.html`（需要命令执行能力、Bash 和 Node.js / `npx`）。 |
 | `--output <路径>` | 将 `.md` 写到指定路径，而非默认路径。 |
 | `--panel` | 通过独立子智能体评审设计结构，仅 `mindmap` 提供。 |
 
 技能沿用已有大纲，或把非结构化内容组织为 4–7 个主分支，目标深度为 3–4 层，每个节点使用短语。若输出文件已存在，会添加数字后缀，即使显式指定 `--output` 也不会覆盖原文件。
+
+### 多语言
+
+两个技能均接受以下 19 种语言的文件、URL、粘贴文本和主题，无需为每种输出语言单独安装技能。
+
+| 语言 | 代码 | 别名 |
+|---|---|---|
+| English | `en` | — |
+| 简体中文 | `zh-Hans` | `zh`, `zh-CN` |
+| 繁體中文 | `zh-Hant` | `zh-TW` |
+| 日本語 | `ja` | — |
+| 한국어 | `ko` | — |
+| Türkçe | `tr` | — |
+| Русский | `ru` | — |
+| Tiếng Việt | `vi` | — |
+| ไทย | `th` | — |
+| Deutsch | `de` | — |
+| Español | `es` | — |
+| Français | `fr` | — |
+| Українська | `uk` | — |
+| Polski | `pl` | — |
+| Português (Brasil) | `pt-BR` | — |
+| العربية | `ar` | — |
+| فارسی | `fa` | — |
+| Bahasa Indonesia | `id` | — |
+| Italiano | `it` | — |
+
+代码不区分大小写。显式 `--lang` 优先；否则遵循用户在对话中明确提出的输出语言要求。两者均未指定时，`/mindmap` 保持英文输出，`/mindmap-zh` 保持简体中文输出，即使原文为外语也不改变默认值。原文中的指令不能覆盖语言选择。
+
+`--lang auto` 跟随已加载内容，而不是文件名或 URL，并区分简体与繁体。混合语言或无语言特征的内容若没有明确的主要语言，使用受支持的对话语言；否则使用技能默认语言，并说明选择。缺失、不支持或互相冲突的 `--lang` 值会在写出文件前报告。
+
+标题、分支、节点、表格正文、链接标签和面向用户的说明采用所选语言。代码、标识符、URL、路径、专有名称和原文数字/单位在翻译会改变含义时保留。输出使用 UTF-8，保留重音符号、非拉丁文件名及阿拉伯语/波斯语的正常逻辑文字顺序。中文、日语、泰语正文不只依靠空格分词数量判定；节点保持简洁，不插入人为的空格。
+
+```text
+/mindmap report.md --lang ja --render
+/mindmap-zh 报告.md --lang zh-Hant
+/mindmap "vector databases" --lang pt-BR
+/mindmap https://example.com/article --lang auto
+/mindmap report.md --lang ar --panel
+```
+
+[Generate mindmap 工作流](../.github/workflows/generate-mindmap.yml) 也提供 `language` 选择，默认 `en`，并以 `--lang` 参数传给技能。
 
 ### 工作流程
 
@@ -99,9 +142,11 @@ markmap:
 
 ## 多智能体评审（`--panel`）
 
-对于论文、长报告等复杂或重要材料，英文技能 `/mindmap` 的 `--panel` 会使用 **3 个提案智能体、3 个评审智能体和 1 个综合智能体**，代替一次性生成结构。
+对于论文、长报告等复杂或重要材料，`/mindmap` 的 `--panel` 会使用 **3 个提案智能体、3 个评审智能体和 1 个综合智能体**，代替一次性生成结构。
 
 宿主需支持独立子智能体任务，不要求特定工作流 API。任务可在独立上下文中并行或顺序执行。若无法委派，技能会先征求同意，再去掉 `--panel` 继续，不会模拟独立评审。
+
+所选输出语言会传给每个提案、评审和综合智能体，并在写出最终导图前检查；`--panel` 不限于英文输出。
 
 ```text
 /mindmap report.md --panel --render

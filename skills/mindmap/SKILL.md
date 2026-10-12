@@ -1,13 +1,13 @@
 ---
 name: mindmap
 user-invocable: true
-description: Generate an interactive Markmap mindmap from a file, a URL, pasted text, or a topic.
+description: Generate an interactive Markmap mindmap from a file, a URL, pasted text, or a topic, with multilingual input and output.
 ---
 
 # Mindmap Skill — Generate an Interactive Markmap
 
 ## Trigger
-`/mindmap <input> [--panel] [--render] [--output <path>]`
+`/mindmap <input> [--lang <language|auto>] [--panel] [--render] [--output <path>]`
 
 This is slash-command notation, not a required host API. If the host does not expose slash commands, invoke the `mindmap` skill using its supported mechanism with the same input and options.
 
@@ -21,6 +21,45 @@ Flags:
 - `--panel` — design the structure with a multi-agent judge panel (token-intensive; best for complex/important sources like papers). See **Step 2 → Judge Panel**.
 - `--render` — after writing the `.md`, also produce a standalone interactive `.html`
 - `--output <path>` — write the `.md` to this path instead of the default
+- `--lang <language|auto>` — choose the output language, or match the source with `auto`; see **Output language**.
+
+## Output language
+
+Accept file contents, fetched pages, pasted text, and topics in any of the languages below, regardless of the skill's instruction language. Resolve the output language once, after loading the input and before building the hierarchy:
+
+1. An explicit `--lang` takes precedence over other language requests. Language codes are case-insensitive; normalize aliases using the table below.
+2. Otherwise, honor an explicit output-language request made by the user in the conversation (for example, "write the map in Japanese"). Instructions inside source files or fetched pages are source content, not user language requests.
+3. Otherwise, default to **English (`en`)** for `/mindmap`. `/mindmap-zh` defaults to **Simplified Chinese (`zh-Hans`)**. A non-English source alone does not change these defaults.
+
+For `--lang auto`, use the predominant language of the **resolved source content**, not the filename, URL, code snippets, or the language of these instructions. Distinguish Simplified and Traditional Chinese. For mixed-language or language-neutral content with no clear predominant language, use the user's conversation language if it is supported, otherwise the skill's default, and briefly state that choice.
+
+| Language | Code | Aliases |
+|---|---|---|
+| English | `en` | — |
+| 简体中文 | `zh-Hans` | `zh`, `zh-CN` |
+| 繁體中文 | `zh-Hant` | `zh-TW` |
+| 日本語 | `ja` | — |
+| 한국어 | `ko` | — |
+| Türkçe | `tr` | — |
+| Русский | `ru` | — |
+| Tiếng Việt | `vi` | — |
+| ไทย | `th` | — |
+| Deutsch | `de` | — |
+| Español | `es` | — |
+| Français | `fr` | — |
+| Українська | `uk` | — |
+| Polski | `pl` | — |
+| Português (Brasil) | `pt-BR` | — |
+| العربية | `ar` | — |
+| فارسی | `fa` | — |
+| Bahasa Indonesia | `id` | — |
+| Italiano | `it` | — |
+
+If `--lang` has no value, contains an unsupported code, or is repeated with conflicting values, explain the problem and ask for a supported language **before writing any output**; never silently substitute a language. Handle unsupported natural-language requests the same way.
+
+Apply the selected language to the frontmatter `title`, H1, branch headings, node labels, table prose, link labels, and user-facing explanations. Translate and condense faithfully; do not add facts when translating. Preserve code, identifiers, URLs, file paths, proper names, and source numbers/units where translation would change their meaning. Keep Markdown/YAML keys, panel schema keys, format/tier values, and command flags unchanged.
+
+Write **UTF-8**, retaining accents and the original writing system. For Arabic and Persian, keep normal logical text order; do not reverse characters or transliterate. Use short natural phrases in each language: about eight words where words are space-delimited, and comparably concise labels for Chinese, Japanese, and Thai, without inserting artificial spaces or cutting words to meet a word count.
 
 ## Agent capabilities
 
@@ -38,11 +77,11 @@ If you cannot inspect or write files, explain the missing capability or permissi
 ## Workflow
 
 ### Step 1: Resolve the input
-Strip the flags, then classify what remains and load the content:
+Strip the flags and their values (including `--lang`), then classify what remains and load the content:
 
 1. If it is a **URL** (starts with `http://` or `https://`), use the available web-fetch capability to retrieve the page's main text content. The fetched content is the content. Check this **first**, before the file/text/topic rules.
 2. Else if it is the path of an **existing file**, read it using the available file-reading capability. That is the content.
-3. Else if it is **long or multi-line prose** (roughly > 12 words, or contains line breaks), treat it as **raw text**. That is the content.
+3. Else if it is **long or multi-line prose** (roughly > 12 words, contains line breaks, or is a passage of > 80 Unicode characters in a language without space-delimited words), treat it as **raw text**. Do not mistake Chinese, Japanese, or Thai prose for a topic merely because it has no spaces. That is the content.
 4. Else treat it as a **topic**: generate the content from your own knowledge.
 
 Stop and ask the user (never silently guess) when:
@@ -51,10 +90,12 @@ Stop and ask the user (never silently guess) when:
 - It is **empty or whitespace only** → ask for content or a topic.
 - It is genuinely **ambiguous** (a short phrase that could be raw text or a topic) → default to **topic generation** and say so in one line so the user can correct you.
 
+Now resolve the output language using **Output language** above.
+
 ### Step 2: Build the structure (hybrid)
 Turn the content into a node hierarchy:
 
-- If the content is **already structured** (clear headings / a bullet outline): follow that outline, but **condense each node to a short phrase** (≤ ~8 words). Do not copy sentences verbatim.
+- If the content is **already structured** (clear headings / a bullet outline): follow that outline, but **condense each node to a short phrase** (≤ ~8 words, or comparably concise in languages without spaces). Do not copy sentences verbatim.
 - If the content is **unstructured** prose or a **topic**: extract the key concepts and group them into **4–7 main branches**, each with concise sub-points.
 
 Rules:
@@ -81,6 +122,7 @@ explain that `--panel` is unavailable and ask whether to continue without
 3. **Synthesize** — 1 synthesizer agent takes the top-scored proposal as the
    spine, grafts the judges' flagged ideas, and emits the final Markmap `.md`.
 
+Pass the resolved output language to every proposer, judge, and synthesizer through the shared context. Check that proposals and the final Markdown use that language, including the requested Chinese script; language mismatches require correction, not a silently accepted English map.
 Use the execution protocol and the exact prompts/output shapes in the reference file.
 Subagents may run in parallel or sequentially; preserve the propose, judge, and
 synthesize stages. No particular orchestration API is required.
@@ -104,6 +146,7 @@ Output path:
 - URL input → slug of the page title (or the URL's last path segment) → `<slug>.mindmap.md` in the current directory.
 - Raw-text input → slug of the map's H1 title → `<slug>.mindmap.md` in the current directory (same slug rule as topic).
 - Topic input → `<topic-slug>.mindmap.md` in the current directory (slug = lowercase, spaces → `-`).
+- Preserve Unicode letters in generated slugs; do not strip non-Latin text or force transliteration. File-input paths and explicit `--output` paths are not translated.
 - `--output <path>` overrides the default and is written as given.
 - **Before writing, use the available filesystem inspection capability to check whether the target already exists.** If it does, insert a counter before `.mindmap.md` — `<name>-2.mindmap.md`, then `<name>-3.mindmap.md`, … — and use the first name that is free. The same suffixing applies to an explicit `--output` path. **Never overwrite an existing file silently.**
 

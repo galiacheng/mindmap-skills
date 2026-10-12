@@ -14,7 +14,7 @@ Requires [Node.js](https://nodejs.org) and Git.
 # Choose skills and target agents interactively
 npx skills add galiacheng/mindmap-skills
 
-# Install only the English or Chinese skill
+# Install a skill with English or Simplified Chinese defaults
 npx skills add galiacheng/mindmap-skills --skill mindmap
 npx skills add galiacheng/mindmap-skills --skill mindmap-zh
 
@@ -26,6 +26,8 @@ npx skills add galiacheng/mindmap-skills --list
 ```
 
 Installation is project-local by default; add `--global` to make the skills available across projects.
+
+Either skill supports all [19 input/output languages](usage.md#languages). Select output with `--lang <code>` or follow the source with `--lang auto`; separate language-specific installations are not needed.
 
 ### Listing on skills.sh
 
